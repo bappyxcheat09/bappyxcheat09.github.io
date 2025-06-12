@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>HEX ⇄ BYTE Converter</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Share Tech Mono', monospace;
+      background: #0d1117;
+      overflow: hidden;
+      color: #00ffff;
+    }
+
+    .particles {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: -1;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #000000 0%, #0d1117 70%);
+    }
+
+    .particle {
+      position: absolute;
+      background: #00ffff;
+      border-radius: 50%;
+      opacity: 0.5;
+      animation: float 6s infinite ease-in-out;
+      filter: drop-shadow(0 0 5px #00ffff);
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-20px); opacity: 1; }
+      100% { transform: translateY(0); opacity: 0.6; }
+    }
+
+    .switch-container {
+      position: fixed;
+      top: 20px;
+      right: 100px;
+      display: flex;
+      align-items: center;
+      background-color: rgba(0, 255, 255, 0.05);
+      padding: 8px 15px;
+      border: 1px solid #00ffff;
+      border-radius: 30px;
+      box-shadow: 0 0 10px #00ffff66;
+      z-index: 1;
+    }
+
+    .switch-label {
+      margin-right: 10px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 55px;
+      height: 26px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #444;
+      transition: 0.4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 4px;
+      bottom: 4px;
+      background-color: #00ffff;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #00ffff44;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(28px);
+    }
+
+    .mode-text {
+      margin-left: 10px;
+      font-size: 14px;
+    }
+
+    .link-button {
+      position: fixed;
+      top: 20px;
+      left: 30px;
+      background: transparent;
+      border: 1px solid #00ffff;
+      border-radius: 30px;
+      padding: 6px 18px;
+      color: #00ffff;
+      font-size: 14px;
+      text-decoration: none;
+      font-weight: bold;
+      box-shadow: 0 0 10px #00ffff55;
+      transition: background 0.3s ease;
+      z-index: 1;
+    }
+
+    .link-button:hover {
+      background: #00ffff22;
+    }
+
+    .container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 720px;
+      max-width: 90%;
+      background: rgba(0, 0, 0, 0.95);
+      border: 2px solid #00ffffaa;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 0 30px #00ffff77;
+    }
+
+    h1 {
+      font-size: 28px;
+      text-align: center;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px #00ffff;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: #000;
+      color: #00ffff;
+      border: 1px solid #00ffff88;
+      font-size: 16px;
+      border-radius: 6px;
+      box-shadow: 0 0 8px #00ffff33;
+    }
+
+    #cpp-output {
+      width: 100%;
+      height: 200px;
+      background: #000;
+      color: #00ffff;
+      border: 1px solid #00ffff88;
+      font-size: 16px;
+      border-radius: 6px;
+      padding: 10px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+
+    #byte-count {
+      font-size: 14px;
+      margin-top: 8px;
+      color: #00ffffbb;
+      font-weight: bold;
+    }
+
+    .footer {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #888;
+      text-shadow: 0 0 5px #00ffff22;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<a class="link-button" href="https://discord.gg/2Zm45QN2hQ" target="_blank">DISCORD</a>
+
+<div class="particles"></div>
+
+<div class="switch-container">
+  <span class="switch-label">MODE:</span>
+  <label class="switch">
+    <input type="checkbox" id="mode-toggle" />
+    <span class="slider"></span>
+  </label>
+  <span class="mode-text" id="mode-text">HEX → BYTE</span>
+</div>
+
+<div class="container">
+  <h1>HEX ⇄ BYTE Converter</h1>
+  <input type="text" id="cpp-input" placeholder="Enter HEX or BYTE data here" spellcheck="false" autocomplete="off" autocorrect="off" />
+  <div id="cpp-output" contenteditable="true" spellcheck="false"></div>
+  <div id="byte-count">BYTE COUNT: 0</div>
+  <div class="footer">Copy output (Ctrl+C) to get single-line code automatically</div>
+</div>
+
+<!-- 💨 Particle Script Moved Here -->
+<script>
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = 4 + Math.random() * 6;
+    p.style.width = `${size}px`;
+    p.style.height = `${size}px`;
+    p.style.top = `${Math.random() * 100}%`;
+    p.style.left = `${Math.random() * 100}%`;
+    p.style.animationDuration = `${4 + Math.random() * 4}s`;
+    document.querySelector('.particles').appendChild(p);
+  }
+</script>
+
+<!-- 🧠 Core Logic -->
+<script>
+  const input = document.getElementById('cpp-input');
+  const output = document.getElementById('cpp-output');
+  const byteCount = document.getElementById('byte-count');
+  const toggle = document.getElementById('mode-toggle');
+  const modeText = document.getElementById('mode-text');
+
+  toggle.addEventListener('change', () => {
+    modeText.textContent = toggle.checked ? 'BYTE → HEX' : 'HEX → BYTE';
+    input.value = '';
+    output.textContent = '';
+    byteCount.textContent = 'BYTE COUNT: 0';
+  });
+
+  function updateOutput() {
+    const mode = toggle.checked ? 'byteToHex' : 'hexToByte';
+    const raw = input.value.trim();
+
+    if (!raw) {
+      output.textContent = '';
+      byteCount.textContent = 'BYTE COUNT: 0';
+      return;
+    }
+
+    if (mode === 'hexToByte') {
+      const tokens = raw.toUpperCase().replace(/[^0-9A-F?]/g, ' ').split(/\s+/).filter(t => t.length === 2);
+      const valid = tokens.every(t => t === '??' || /^[0-9A-F]{2}$/.test(t));
+      if (!valid) {
+        output.textContent = 'Invalid HEX input! Use 2-digit HEX or ??';
+        byteCount.textContent = 'BYTE COUNT: 0';
+        return;
+      }
+      const bytes = tokens.map(t => t === '??' ? "'?'" : `0x${t}`);
+      output.textContent = bytes.map((b, i) => (i % 8 === 0 && i !== 0 ? '\n' : '') + b).join(', ');
+      byteCount.textContent = `BYTE COUNT: ${bytes.length}`;
+    } else {
+      const tokens = raw.split(/[\s,]+/).filter(t => t.length);
+      const hex = [];
+      for (const t of tokens) {
+        if (t === '?' || t === "'?'") hex.push('??');
+        else {
+          const val = t.startsWith('0x') ? t.slice(2) : t;
+          if (/^[0-9a-fA-F]{2}$/.test(val)) hex.push(val.toUpperCase());
+          else {
+            output.textContent = 'Invalid BYTE input! Use 0xNN or ?';
+            byteCount.textContent = 'BYTE COUNT: 0';
+            return;
+          }
+        }
+      }
+      output.textContent = hex.map((h, i) => (i % 8 === 0 && i !== 0 ? '\n' : '') + h).join(' ');
+      byteCount.textContent = `BYTE COUNT: ${hex.length}`;
+    }
+  }
+
+  input.addEventListener('input', updateOutput);
+
+  output.addEventListener('copy', (e) => {
+    e.preventDefault();
+    const text = output.textContent.replace(/\s+/g, ' ').trim();
+    e.clipboardData.setData('text/plain', text);
+  });
+</script>
+</body>
+</html>
